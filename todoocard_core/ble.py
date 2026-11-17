@@ -235,6 +235,37 @@ async def read_battery(client, *, timeout: float = 6.0) -> int | None:
     return int(value[0])
 
 
+async def refresh_gatt_cache(client, *, log: LogFn, settle_seconds: float = 1.8) -> bool:
+    """macOS 在加密链路建立后会下发 Service Changed，使已缓存的 GATT 树失效。
+
+    bleak 的 CoreBluetooth 后端不会自动重建缓存：如果继续使用连接早期拿到的
+    characteristic 对象，写操作会得不到 ATT 响应、notify 也永远不会回调——表现
+    就是「控制命令写超时、收不到任何通知」。Swift 核心的做法是读电量确认加密
+    后等待 1.8 秒，再重新 discoverServices；这里保持同一契约。
+
+    仅 macOS 需要：Windows/Linux 的加密不会触发 Service Changed。
+    """
+    if _platform() != "macos":
+        return False
+    backend = getattr(client, "_backend", None)
+    if backend is None or not hasattr(backend, "services"):
+        return False
+    await asyncio.sleep(settle_seconds)
+    cached = getattr(backend, "services", None)
+    getter = getattr(backend, "_get_services", None) or getattr(backend, "get_services", None)
+    if getter is None:
+        return False
+    backend.services = None
+    try:
+        await getter()
+    except Exception as exc:
+        backend.services = cached
+        log(f"GATT service refresh failed; keeping cached handles: {exc}")
+        return False
+    log("Encrypted link ready; GATT services rediscovered after Service Changed")
+    return True
+
+
 async def pair(client, item: Discovered, *, log: LogFn) -> None:
     """Create the system bond. Must only be called during an open pairing window."""
     plat = _platform()
@@ -271,6 +302,8 @@ async def verify_bond(client, item: Discovered, *, log: LogFn) -> None:
             "Encrypted Battery Level is missing; cannot verify the secure bond", 18
         )
     log(f"Encrypted link verified; battery={battery}%")
+    # 加密会触发 Service Changed；不刷新缓存的话后续 FEF1/FEF2 读写都会静默失败。
+    await refresh_gatt_cache(client, log=log)
 
 
 async def find_transfer_chars(client) -> tuple[object | None, object | None, object | None]:
@@ -318,6 +351,8 @@ def is_encryption_error(exc: BaseException) -> bool:
         "insufficient",
         "not paired",
         "peer removed pairing",
+        "failed to encrypt",
+        "code=15",
         "0x8007",
         "cbattlasterrorcode=15",
         "cbattlasterrorcode 15",

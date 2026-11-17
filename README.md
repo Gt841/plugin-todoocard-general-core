@@ -88,6 +88,8 @@ Transfer completed and refresh acknowledged by 0x05/0x08
 
 Windows 没有 `canSendWriteWithoutResponse`，核心用「窗口内连续不带响应写入 + 窗口末块带响应屏障 + 设备检查点」模拟流控；macOS 的 CoreBluetooth 路径由 bleak 转译，协议层完全一致。
 
+**macOS 的 Service Changed 刷新（0.1.1）**：加密链路建立后卡片会下发 Service Changed，CoreBluetooth 会作废连接早期缓存的 GATT 树，而 bleak 不会自动重建。继续使用旧句柄时写命令拿不到 ATT 响应、notify 也永不回调，表现为「控制命令超时、收不到任何通知」。核心现在与 Swift 版一致：读电量确认加密后等待 1.8 秒，丢弃旧缓存并重新发现服务，再开始握手。
+
 ## 固件矩阵
 
 | 固件 | 行为 |

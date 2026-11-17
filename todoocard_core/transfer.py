@@ -150,7 +150,7 @@ class Transfer:
         try:
             await asyncio.wait_for(
                 self.client.write_gatt_char(self.control, payload, response=response),
-                timeout=2.5,
+                timeout=1.2,
             )
             return
         except asyncio.TimeoutError:
