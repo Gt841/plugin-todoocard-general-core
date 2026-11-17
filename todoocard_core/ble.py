@@ -255,11 +255,18 @@ async def refresh_gatt_cache(client, *, log: LogFn, settle_seconds: float = 1.8)
     getter = getattr(backend, "_get_services", None) or getattr(backend, "get_services", None)
     if getter is None:
         return False
-    backend.services = None
+    try:
+        backend.services = None
+    except Exception:
+        # 某些 bleak 版本把 services 暴露成只读属性；此时无法强制重建缓存。
+        return False
     try:
         await getter()
     except Exception as exc:
-        backend.services = cached
+        try:
+            backend.services = cached
+        except Exception:
+            pass
         log(f"GATT service refresh failed; keeping cached handles: {exc}")
         return False
     log("Encrypted link ready; GATT services rediscovered after Service Changed")

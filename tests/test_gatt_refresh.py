@@ -69,3 +69,23 @@ def test_refresh_without_backend_api_is_noop(monkeypatch):
     plain_backend = SimpleNamespace(services={"stale": True})
     assert run(ble.refresh_gatt_cache(FakeClient(plain_backend), log=logs.append, settle_seconds=0)) is False
     assert plain_backend.services == {"stale": True}
+
+
+def test_refresh_tolerates_read_only_service_property(monkeypatch):
+    monkeypatch.setattr(ble, "_platform", lambda: "macos")
+    logs: list[str] = []
+
+    class ReadOnlyBackend:
+        def __init__(self):
+            self._services = {"stale": True}
+
+        @property
+        def services(self):
+            return self._services
+
+        async def _get_services(self):
+            raise AssertionError("should not rediscover")
+
+    backend = ReadOnlyBackend()
+    assert run(ble.refresh_gatt_cache(FakeClient(backend), log=logs.append, settle_seconds=0)) is False
+    assert backend.services == {"stale": True}
