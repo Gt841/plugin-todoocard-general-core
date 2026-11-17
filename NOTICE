@@ -1,0 +1,18 @@
+Third-party notices
+
+todoocard_core/quicklz.py
+
+    QuickLZ 1.5 level-3 block encoder/decoder and the T3 controller payload
+    wrapper. Ported from the MIT-licensed `todoocard-eink` project
+    (https://github.com/shidaifufen/todoocard-eink, quicklz_payload.py).
+
+    The algorithm and byte stream are unchanged; only the module layout and
+    docstrings were adjusted for this package.
+
+Protocol / device behaviour reference
+
+    TodooCard/T3 advertisement layout, secure-GATT pairing contract and the
+    verified transfer state machine were implemented from public behaviour of
+    the official app and the (unlicensed) `Sunbelife/TodooCard_Skills` scripts.
+    No Swift source is copied or redistributed here; this package is an
+    independent Python implementation.

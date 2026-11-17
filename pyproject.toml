@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "todoocard-general-core"
+version = "0.1.0"
+description = "TodooCard/T3 528x792 six-color payload + cross-platform BLE transfer core"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Gt841" }]
+keywords = ["todocard", "todoocard", "epaper", "eink", "ble", "siyuan"]
+dependencies = [
+  "bleak>=0.22,<2",
+  "Pillow>=10.0,<12",
+]
+
+[project.optional-dependencies]
+heif = ["pillow-heif>=0.16"]
+
+[project.scripts]
+todoocard = "todoocard_core.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["todoocard_core*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
