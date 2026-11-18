@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "todoocard-general-core",
+  "version": "0.1.2",
+  "releasedAt": "2026-11-18",
+  "license": "MIT",
+  "python": ">=3.9",
+  "platforms": ["darwin", "win32", "linux"],
+  "entry": "todoocard_core.cli:main",
+  "card": {
+    "width": 528,
+    "height": 792,
+    "colors": 6,
+    "bitmapBytes": 209088
+  },
+  "device": {
+    "manufacturerId": "0x5053",
+    "screenType": "0x134C",
+    "controlUuids": [
+      "0000fef1-0000-1000-8000-00805f9b34fb",
+      "0000fdf1-0000-1000-8000-00805f9b34fb"
+    ],
+    "dataUuids": [
+      "0000fef2-0000-1000-8000-00805f9b34fb",
+      "0000fdf2-0000-1000-8000-00805f9b34fb"
+    ]
+  },
+  "firmware": {
+    "secureMin": "0x8C",
+    "verifiedMin": "0x9D",
+    "diagnosticsMin": "0xA5",
+    "recoveryFlag": "0x08"
+  },
+  "transfer": {
+    "blockSizeBytes": 2048,
+    "quicklzLevel": 3,
+    "verifiedWindowBlocks": 32,
+    "checkpointTimeoutSeconds": 5.0,
+    "finalAckTimeoutSeconds": 10.0,
+    "legacyFinalAckTimeoutSeconds": 90.0
+  }
+}

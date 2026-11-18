@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "todoocard-general-core"
-version = "0.1.1"
+version = "0.1.2"
 description = "TodooCard/T3 528x792 six-color payload + cross-platform BLE transfer core"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -25,6 +25,9 @@ todoocard = "todoocard_core.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["todoocard_core*"]
+
+[tool.setuptools.package-data]
+todoocard_core = ["manifest.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

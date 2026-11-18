@@ -1,7 +1,7 @@
 """TodooCard universal core: image payloads and BLE transfer for macOS/Windows/Linux."""
 from __future__ import annotations
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 from .imaging import CARD_H, CARD_W, ImageError, PayloadArtifacts, build
 from .protocol import Advertisement, is_device_id, parse_manufacturer_data

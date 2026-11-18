@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from . import __version__, ble, imaging, protocol, quicklz
+from .manifest import manifest_text
 from .transfer import HandshakeError, Transfer, TransferError, TransferOptions
 
 
@@ -253,6 +254,8 @@ def _build_parser() -> argparse.ArgumentParser:
         description="TodooCard/T3 six-color image payload + BLE transfer (macOS/Windows/Linux)",
     )
     parser.add_argument("--version", action="version", version=f"todoocard-general-core {__version__}")
+    parser.add_argument("--manifest", action="store_true",
+                        help="print the core manifest (version and compatibility contract) and exit")
     parser.add_argument("--list", action="store_true", help="scan for nearby devices and exit")
     parser.add_argument("--pair", action="store_true", help="create the system BLE bond")
     parser.add_argument("--probe", action="store_true", help="verify a bonded, encrypted link")
@@ -275,6 +278,9 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
+    if args.manifest:
+        print(manifest_text(), end="")
+        return 0
     modes = [bool(args.list), bool(args.pair), bool(args.probe), bool(args.input), bool(args.send)]
     if sum(modes) != 1:
         if not (args.input and args.send):

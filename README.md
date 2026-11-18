@@ -50,6 +50,9 @@ todoocard --input photo.jpg --device-id <UUID 或 MAC> --send
 
 # 源图需要顺时针转 90° 时
 todoocard --input photo.jpg --rotate-right-90 --device-id <UUID> --send
+
+# 版本清单：输出版本与兼容契约（JSON），供插件/脚本校验
+todoocard --manifest
 ```
 
 `--output DIR` 指定产物目录，默认是系统临时目录下的 `todoocard-general/`。产物：
@@ -77,6 +80,26 @@ Transfer completed and refresh acknowledged by 0x05/0x08
 ```
 
 失败时输出 `Transfer failed: ...`，并在支持诊断的固件上追加 `Failure summary: ...`。
+
+## 版本清单（manifest）
+
+`todoocard_core/manifest.json` 是核心的机器可读版本契约，随包分发；`todoocard --manifest` 原样输出，插件和脚本不必解析 README 或 `--version` 文本：
+
+```json
+{
+  "schemaVersion": 1,
+  "name": "todoocard-general-core",
+  "version": "0.1.2",
+  "python": ">=3.9",
+  "platforms": ["darwin", "win32", "linux"],
+  "card": { "width": 528, "height": 792, "colors": 6, "bitmapBytes": 209088 },
+  "device": { "manufacturerId": "0x5053", "screenType": "0x134C" },
+  "firmware": { "secureMin": "0x8C", "verifiedMin": "0x9D", "diagnosticsMin": "0xA5" },
+  "transfer": { "blockSizeBytes": 2048, "quicklzLevel": 3, "verifiedWindowBlocks": 32 }
+}
+```
+
+版本号由 `todoocard_core.__version__`、`pyproject.toml` 与 manifest 三处共同约束，`tests/test_manifest.py` 会校验三者一致，并把卡片尺寸、设备 ID、UUID、固件门槛和传输参数与代码常量逐项比对，防止清单与实现漂移。
 
 ## 平台差异
 
@@ -114,7 +137,23 @@ Windows 没有 `canSendWriteWithoutResponse`，核心用「窗口内连续不带
 .venv/bin/pytest
 ```
 
-测试覆盖：广告解析与描述契约、六色转换与面板/控制器坐标、legacy 包结构、QuickLZ 往返、CLI 输出契约、verified/legacy 传输状态机（含检查点、提前 0x08、缺失刷新确认）。
+测试覆盖：广告解析与描述契约、六色转换与面板/控制器坐标、legacy 包结构、QuickLZ 往返、CLI 输出契约、verified/legacy 传输状态机（含检查点、提前 0x08、缺失刷新确认）、GATT 缓存刷新、manifest 版本与常量一致性。
+
+## 更新记录
+
+### 0.1.2
+
+- 新增 `todoocard_core/manifest.json` 与 `todoocard --manifest`：版本、平台、卡片/设备参数、固件门槛与传输参数成为机器可读契约。
+- 版本一致性测试：`__version__`、`pyproject.toml`、manifest 三处必须一致，常量与协议实现逐项比对。
+- GATT 缓存刷新兼容只读 `services` 的 bleak 版本，刷新失败时保留旧句柄并记录日志。
+
+### 0.1.1
+
+- 修复 macOS 加密链路建立后 Service Changed 作废 GATT 缓存导致控制命令超时的问题：读电量确认加密后等待 1.8 秒、重新发现服务再握手。
+
+### 0.1.0
+
+- 首个跨平台版本：六色图片管线、v157+ 分块传输、legacy 固件、配对契约与失败诊断。
 
 ## 许可证
 
